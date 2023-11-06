@@ -21,7 +21,7 @@ class Cat(Base):
     id = Column(Integer, primary_key=True, index=True)
     nickname = Column(String, index=True)
     age = Column(Integer)
-    vactinated = Column(Boolean, default=False)
+    vaccinated = Column(Boolean, default=False)
     description = Column(String)
     owner_id = Column(Integer, ForeignKey("owners.id"), nullable=True)
     owner = relationship("Owner", backref="cats")
