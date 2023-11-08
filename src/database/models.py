@@ -6,10 +6,13 @@ Base = declarative_base()
 
 class Contact(Base):
     __tablename__ = "contacts"
-    id = Column(Integer, primary_key=True, index=True)
-    firstname = Column(String)
+    id = Column(Integer, primary_key=True)
+    firstname = Column(String, index=True)
     lastname = Column(String)
     email = Column(String, unique=True, index=True)
     phone = Column(String, default="None", nullable=False)
-
+    birthday = Column(Date, default=None, nullable=True)
+    additional = Column(String, default="None", nullable=False)
+    created_at = Column(DateTime, default=func.now())  
+    updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
 
