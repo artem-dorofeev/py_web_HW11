@@ -1,3 +1,5 @@
+from datetime import date, timedelta, datetime
+from sqlalchemy import extract, between
 from sqlalchemy.orm import Session
 
 from src.database.models import Contact
@@ -17,7 +19,7 @@ async def get_contact_by_id(contact_id: int, db: Session):
 
 
 async def get_contact_by_firstname(contact_firstname: str, limit: int, offset: int, db: Session):
-    contacts = db.query(Contact).filter_by(name=contact_firstname)
+    contacts = db.query(Contact).filter_by(firstname=contact_firstname)
     contacts = contacts.limit(limit).offset(offset)
     return contacts
 
@@ -61,6 +63,20 @@ async def remove_contact(contact_id: int, db: Session):
     return contact
 
 
-async def get_contacts_with_birthdays_in_next_7_days(limit: int, offset: int, db: Session):
-    #найти как я делал для проекта и в дз
-    pass
+async def get_contacts_birthday(contact_birthday, limit: int, offset: int, db: Session):
+    contacts = db.query(Contact).filter_by(birthday=contact_birthday)
+    contacts = contacts.limit(limit).offset(offset)
+    return contacts
+
+
+async def get_birthdays_in_next_week(limit: int, offset: int, db: Session):
+    current_date = date.today()
+    next_week_start = current_date
+    next_week_end = current_date + timedelta(days=7)
+
+    condition = between(extract('month', Contact.birthday), next_week_start.month, next_week_end.month) & \
+                between(extract('day', Contact.birthday), next_week_start.day, next_week_end.day)
+
+    contacts = db.query(Contact).filter(condition).limit(limit).offset(offset).all()
+
+    return contacts

@@ -1,3 +1,4 @@
+from datetime import date, timedelta, datetime
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status, Path, Query
@@ -53,19 +54,14 @@ async def get_contact_by_email(contact_email: str, db: Session = Depends(get_db)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Contact with email {contact_email} not found")
     return contact
 
-# @router.get("/birthdays_in_next_7_days", response_model=list[ContactResponse])
-# async def get_contacts_with_birthdays_in_next_7_days(
-#     limit: int = Query(10, le=1000),
-#     offset: int = 0,
-#     db: Session = Depends(get_db)
-# ):
-#     #today = datetime.now().date()
-#     today = datetime(2023, 7, 11).date()
-#     next_week = today + timedelta(days=7)
-#     contacts = await repository_contacts.get_contacts_with_birthdays_in_next_7_days(limit, offset, db)
-#     if not contacts:
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Contacts with birthdays for the next week not found")
-#     return contacts
+
+@router.get("/birthday/{contact_birthday}", response_model=list[ContactResponse], name="Find contact by birthday")
+async def get_contacts_birthday(contact_birthday: str, limit: int = Query(10, le=1000), offset: int = 0, db: Session = Depends(get_db)):
+    contacts = await repository_contacts.get_contacts_birthday(contact_birthday, limit, offset, db)
+    if contacts is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Not found contacts with birthday in {contact_birthday}")
+    return contacts
+
 
 
 @router.put("/{contact_id}", response_model=ContactResponse)
@@ -83,3 +79,10 @@ async def remove_contact(contact_id: int = Path(ge=1), db: Session = Depends(get
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Contact with ID={contact_id} not found")
     return contact
 
+
+@router.get("/birthdays_in_next_week", response_model=list[ContactResponse], name="Find contact by birthday in next week")
+async def get_birthdays_in_next_week(limit: int = Query(10, le=1000), offset: int = 0, db: Session = Depends(get_db)):
+    contact = await repository_contacts.get_birthdays_in_next_week(limit, offset, db)
+    if contact is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"No contacts birthday in this period")
+    return contact
